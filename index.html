@@ -361,6 +361,27 @@
 
     .chart-container { position: relative; height: 320px; }
 
+    .attribution {
+      border-top: 1px solid var(--border);
+      margin-top: 4px;
+      padding-top: 20px;
+      margin-bottom: 28px;
+    }
+
+    .attribution p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin: 0;
+    }
+
+    .attribution a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .attribution a:hover { text-decoration: underline; }
+
     .results-footer {
       display: flex;
       justify-content: center;
@@ -548,6 +569,19 @@
         <div class="chart-container">
           <canvas id="calibration-chart"></canvas>
         </div>
+      </div>
+
+      <div class="attribution">
+        <p>
+          The idea of calibration as a trainable reasoning skill comes from
+          <a href="https://www.goodreads.com/book/show/42041926-the-scout-mindset"
+             target="_blank" rel="noopener"><em>The Scout Mindset</em></a>
+          by Julia Galef. Galef argues that good thinking means caring more
+          about mapping reality accurately than about defending what you
+          already believe — treating your beliefs as hypotheses to update,
+          not flags to plant. Calibration training is one practical way to
+          build that habit.
+        </p>
       </div>
 
       <div class="results-footer">
@@ -885,15 +919,18 @@ function showResults() {
 
 // ── Calibration chart ─────────────────────────────────────────────────────────
 
-// Returns a semi-translucent fill and a fully-opaque border for each dot.
-// deviation 0 → rich green; deviation ≥ 40 → vivid red.
+// Dot color: accent dusty blue (well calibrated) → white (poorly calibrated).
+// deviation = |stated confidence midpoint − actual accuracy|
+// Accent blue is ~hsl(207, 38%, 54%). At full deviation it fades to near-white.
 function deviationToColors(dev) {
-  const t  = Math.min(dev / 40, 1);
-  const h  = Math.round(142 * (1 - t) + 4 * t);   // 142° green → 4° red
-  const s  = Math.round(62  + 10 * t);              // 62% → 72% saturation
-  const l  = Math.round(40  -  4 * t);              // 40% → 36% lightness
-  const fill   = `hsla(${h}, ${s}%, ${l}%, 0.65)`;
-  const border = `hsl(${h}, ${s}%, ${Math.max(l - 8, 20)}%)`;
+  const t  = Math.min(dev / 40, 1);          // 0 = on the line, 1 = far off
+  const s  = Math.round(38 * (1 - t));        // 38% → 0% saturation
+  const l  = Math.round(54 + 43 * t);         // 54% → 97% lightness
+  // Fill is semi-translucent; border stays opaque for a clean ring
+  const fill   = `hsla(207, ${s}%, ${l}%, 0.80)`;
+  const bs     = Math.round(42 * (1 - t) + 18 * t);   // border saturation
+  const bl     = Math.round(38 * (1 - t) + 72 * t);   // border lightness
+  const border = `hsl(207, ${bs}%, ${bl}%)`;
   return { fill, border };
 }
 
@@ -977,9 +1014,9 @@ function drawChart(bucketData) {
         y: {
           type:  "linear",
           min:   0,
-          max:   105,
+          max:   100,
           title: { display: true, text: "Actual accuracy (%)", color: "#718096", font: { size: 12 } },
-          ticks: { stepSize: 20, callback: v => v + "%", color: "#718096" },
+          ticks: { stepSize: 20, callback: v => v + "%", color: "#718096", max: 100 },
           grid:  { color: "#edf2f7" },
         },
       },
