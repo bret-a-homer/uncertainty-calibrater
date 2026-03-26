@@ -1,0 +1,482 @@
+[
+  {
+    "id": "gen_001",
+    "topic": "general",
+    "question": "The Nile is the longest river in the world.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gen_002",
+    "topic": "general",
+    "question": "The Amazon River discharges more water into the sea than any other river on Earth.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gen_003",
+    "topic": "general",
+    "question": "Russia is the largest country in the world by land area.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gen_004",
+    "topic": "general",
+    "question": "The Pacific Ocean is larger than all of Earth's land combined.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gen_005",
+    "topic": "general",
+    "question": "Africa is the largest continent by land area.",
+    "answer": false,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gen_006",
+    "topic": "general",
+    "question": "The blue whale is the largest animal known to have ever existed on Earth.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gen_007",
+    "topic": "general",
+    "question": "The cheetah is the fastest land animal.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gen_008",
+    "topic": "general",
+    "question": "The Great Wall of China is clearly visible from space with the naked eye.",
+    "answer": false,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gen_009",
+    "topic": "general",
+    "question": "Tokyo is the most populous metropolitan area in the world.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gen_010",
+    "topic": "general",
+    "question": "The Sahara Desert is the largest hot desert on Earth.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gen_011",
+    "topic": "general",
+    "question": "Gold is the most abundant metal found in the Earth's crust.",
+    "answer": false,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gen_012",
+    "topic": "general",
+    "question": "Elephants are the largest living land animals on Earth.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gen_013",
+    "topic": "general",
+    "question": "Antarctica is classified as a desert.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gen_014",
+    "topic": "general",
+    "question": "Mandarin Chinese is the most spoken language in the world by number of native speakers.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gen_015",
+    "topic": "general",
+    "question": "The country of Nigeria has a larger population than Russia.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gh_001",
+    "topic": "global_health",
+    "question": "Global child mortality (under age 5) has more than halved since 1990.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gh_002",
+    "topic": "global_health",
+    "question": "Global average life expectancy at birth is now over 70 years.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gh_003",
+    "topic": "global_health",
+    "question": "The majority of global deaths are now caused by non-communicable diseases.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gh_004",
+    "topic": "global_health",
+    "question": "Vaccines prevent an estimated 2 to 3 million deaths per year globally.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gh_005",
+    "topic": "global_health",
+    "question": "The global extreme poverty rate has declined significantly since 1990.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gh_006",
+    "topic": "global_health",
+    "question": "Tuberculosis remains one of the top 10 causes of death worldwide.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gh_007",
+    "topic": "global_health",
+    "question": "Global literacy rates have increased substantially since 1970.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gh_008",
+    "topic": "global_health",
+    "question": "Malaria deaths have more than doubled since 2000.",
+    "answer": false,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gh_009",
+    "topic": "global_health",
+    "question": "Global maternal mortality has decreased significantly since 1990.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gh_010",
+    "topic": "global_health",
+    "question": "More people globally now have access to mobile phones than to safely managed sanitation.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gh_011",
+    "topic": "global_health",
+    "question": "Cardiovascular disease is the leading cause of death globally.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gh_012",
+    "topic": "global_health",
+    "question": "The majority of people who lack access to electricity live in Sub-Saharan Africa.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gh_013",
+    "topic": "global_health",
+    "question": "Diabetes prevalence worldwide has roughly doubled since 1980.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gh_014",
+    "topic": "global_health",
+    "question": "The global obesity rate is higher today than the global hunger rate.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "gh_015",
+    "topic": "global_health",
+    "question": "HIV/AIDS killed more people in 2022 than it did in 2002.",
+    "answer": false,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "aw_001",
+    "topic": "animal_welfare",
+    "question": "Pigs are widely regarded by researchers as more cognitively complex than dogs.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "aw_002",
+    "topic": "animal_welfare",
+    "question": "Octopuses have three hearts.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "aw_003",
+    "topic": "animal_welfare",
+    "question": "Crows can recognize and remember individual human faces.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "aw_004",
+    "topic": "animal_welfare",
+    "question": "Elephants have been documented engaging in behaviors consistent with mourning their dead.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "aw_005",
+    "topic": "animal_welfare",
+    "question": "The majority of land animals raised for food globally live on industrial factory farms.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "aw_006",
+    "topic": "animal_welfare",
+    "question": "Dolphins have been observed using tools in the wild.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "aw_007",
+    "topic": "animal_welfare",
+    "question": "Laboratory rats have demonstrated empathy-like behavior by helping other rats in distress.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "aw_008",
+    "topic": "animal_welfare",
+    "question": "There are more chickens on Earth at any given time than humans.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "aw_009",
+    "topic": "animal_welfare",
+    "question": "Fish have nociceptors and display behavioral responses consistent with feeling pain.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "aw_010",
+    "topic": "animal_welfare",
+    "question": "The majority of global antibiotic use by volume is in livestock, not humans.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "aw_011",
+    "topic": "animal_welfare",
+    "question": "Chimpanzees have demonstrated the ability to learn and use human sign language.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "aw_012",
+    "topic": "animal_welfare",
+    "question": "Honeybees have been shown to exhibit pessimistic cognitive biases after stressful events.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "aw_013",
+    "topic": "animal_welfare",
+    "question": "Most farmed salmon are raised in open-net ocean pens rather than fully enclosed tanks.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "aw_014",
+    "topic": "animal_welfare",
+    "question": "Insects make up more than half of all known animal species on Earth.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "aw_015",
+    "topic": "animal_welfare",
+    "question": "Parrots are the only non-human animals known to produce entirely novel sentences.",
+    "answer": false,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "ai_001",
+    "topic": "ai_development",
+    "question": "The term 'artificial intelligence' was coined in the 1950s.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "ai_002",
+    "topic": "ai_development",
+    "question": "AlphaGo defeated a professional world champion at the game of Go before 2020.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "ai_003",
+    "topic": "ai_development",
+    "question": "GPT-4 was publicly released in 2023.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "ai_004",
+    "topic": "ai_development",
+    "question": "DeepMind's AlphaFold achieved a major breakthrough in protein structure prediction in 2020.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "ai_005",
+    "topic": "ai_development",
+    "question": "The Transformer architecture, which underlies modern large language models, was introduced before 2015.",
+    "answer": false,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "ai_006",
+    "topic": "ai_development",
+    "question": "AI systems have been used to discover novel antibiotic candidates.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "ai_007",
+    "topic": "ai_development",
+    "question": "An AI system defeated world-champion human players at poker before 2020.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "ai_008",
+    "topic": "ai_development",
+    "question": "Fully autonomous self-driving cars at SAE Level 5 are commercially available in most major cities.",
+    "answer": false,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "ai_009",
+    "topic": "ai_development",
+    "question": "The first AI program capable of playing checkers was created in the 1950s.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "ai_010",
+    "topic": "ai_development",
+    "question": "China now produces more AI research publications per year than the United States.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "ai_011",
+    "topic": "ai_development",
+    "question": "More than half of all internet traffic is estimated to come from automated bots.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "ai_012",
+    "topic": "ai_development",
+    "question": "Natural language processing became a recognized AI research area before the year 2000.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "ai_013",
+    "topic": "ai_development",
+    "question": "IBM's Deep Blue defeated world chess champion Garry Kasparov in 1997.",
+    "answer": true,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "ai_014",
+    "topic": "ai_development",
+    "question": "Generative AI tools such as image generators were widely available to the public before 2020.",
+    "answer": false,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  },
+  {
+    "id": "ai_015",
+    "topic": "ai_development",
+    "question": "Large language models are primarily trained using reinforcement learning from scratch.",
+    "answer": false,
+    "source": "placeholder — verify before use",
+    "placeholder": true
+  }
+]

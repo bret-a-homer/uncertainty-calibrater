@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Uncertainty Calibration Trainer</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+  <style>
+    /* ── Reset & base ─────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #f5f4f0;
+      --bg-card:    #ffffff;
+      --text:       #2d3748;
+      --text-muted: #718096;
+      --accent:     #5b8db8;
+      --accent-dk:  #3a6e9a;
+      --border:     #dde3ea;
+      --correct:    #38a169;
+      --wrong:      #e53e3e;
+      --radius:     10px;
+      --shadow:     0 2px 12px rgba(0,0,0,.07);
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                   "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.6;
+    }
+
+    /* ── Layout wrapper ───────────────────────────────────────────────────── */
+    .app {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .logo h1 {
+      font-size: 1.35rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .logo p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ── Card ─────────────────────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 36px 40px;
+    }
+
+    @media (max-width: 520px) {
+      .card { padding: 28px 20px; }
+    }
+
+    /* ── Screens (fade in/out) ────────────────────────────────────────────── */
+    .screen { display: none; }
+
+    .screen.active {
+      display: block;
+      animation: fadeUp 0.28s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Typography ───────────────────────────────────────────────────────── */
+    h2 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 14px;
+      color: var(--text);
+      line-height: 1.35;
+    }
+
+    p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    /* ── Buttons ──────────────────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 11px 26px;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s, opacity 0.15s;
+      text-decoration: none;
+    }
+
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover { background: var(--accent-dk); }
+
+    .btn-primary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--accent);
+      border: 1.5px solid var(--accent);
+    }
+
+    .btn-outline:hover { background: #eef4fb; }
+
+    /* ── Welcome screen ───────────────────────────────────────────────────── */
+    .topic-group {
+      margin: 24px 0;
+    }
+
+    .topic-group label.group-label {
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .topic-options {
+      display: grid;
+      gap: 8px;
+    }
+
+    .topic-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .topic-option:hover {
+      border-color: var(--accent);
+      background: #f0f7ff;
+    }
+
+    .topic-option.selected {
+      border-color: var(--accent);
+      background: #eef4fb;
+    }
+
+    .topic-option input[type="radio"] {
+      margin-top: 3px;
+      accent-color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .topic-option .topic-name {
+      font-size: 0.92rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .topic-option .topic-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    .welcome-footer {
+      margin-top: 28px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    /* ── Question screen ──────────────────────────────────────────────────── */
+    .progress-bar-wrap {
+      margin-bottom: 26px;
+    }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .progress-track {
+      height: 4px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 99px;
+      transition: width 0.3s ease;
+    }
+
+    .question-text {
+      font-size: 1.15rem;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.5;
+      margin-bottom: 28px;
+      min-height: 60px;
+    }
+
+    /* True / False toggle buttons */
+    .tf-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .tf-btn {
+      padding: 14px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-card);
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+    }
+
+    .tf-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .tf-btn.selected-true {
+      border-color: var(--correct);
+      background: #f0fff4;
+      color: var(--correct);
+    }
+
+    .tf-btn.selected-false {
+      border-color: var(--wrong);
+      background: #fff5f5;
+      color: var(--wrong);
+    }
+
+    /* Confidence slider */
+    .confidence-section {
+      margin-bottom: 32px;
+    }
+
+    .confidence-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .confidence-label-row label {
+      margin: 0;
+    }
+
+    .confidence-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--accent);
+      min-width: 48px;
+      text-align: right;
+    }
+
+    .slider-wrap {
+      position: relative;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 99px;
+      background: var(--border);
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,.2);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,.2);
+      cursor: pointer;
+    }
+
+    .slider-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .question-footer {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    /* ── Results screen ───────────────────────────────────────────────────── */
+    .results-header {
+      text-align: center;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 28px;
+    }
+
+    .score-display {
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .score-label-badge {
+      display: inline-block;
+      padding: 3px 12px;
+      border-radius: 99px;
+      background: #eef4fb;
+      color: var(--accent-dk);
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .score-message {
+      font-size: 0.97rem;
+      color: var(--text-muted);
+      max-width: 460px;
+      margin: 0 auto;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .stat-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-box .stat-num {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .stat-box .stat-lbl {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .chart-section {
+      margin-bottom: 28px;
+    }
+
+    .chart-section h3 {
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 320px;
+    }
+
+    .results-footer {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    /* ── Loading state ────────────────────────────────────────────────────── */
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(245,244,240,.75);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+
+    .loading-overlay.visible {
+      display: flex;
+    }
+
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin-right: 10px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Error banner ─────────────────────────────────────────────────────── */
+    .error-banner {
+      display: none;
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      color: var(--wrong);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      font-size: 0.88rem;
+      margin-top: 14px;
+    }
+
+    .error-banner.visible { display: block; }
+  </style>
+</head>
+
+<body>
+<div class="app">
+
+  <!-- ─── Site header ─────────────────────────────────────────────────────── -->
+  <div class="logo">
+    <h1>Uncertainty Calibration Trainer</h1>
+    <p>How well does your confidence match your accuracy?</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       SCREEN 1 — Welcome
+  ════════════════════════════════════════════════════════════════════════════ -->
+  <div id="screen-welcome" class="screen active">
+    <div class="card">
+      <h2>What is calibration?</h2>
+      <p>
+        A well-calibrated person's stated confidence matches reality:
+        when they say they're 70% sure, they're right about 70% of the time —
+        no more, no less. This matters because overconfidence leads to
+        poor decisions while underconfidence means leaving good options on the
+        table. Good forecasters, scientists, and decision-makers all
+        cultivate this skill. Julia Galef calls it the
+        <em>Scout Mindset</em> — caring more about what is true than
+        about being right.
+      </p>
+      <p>
+        This quiz presents 40 true/false statements.
+        For each one, pick your answer <strong>and</strong> set how
+        confident you are (50% = just guessing, 100% = certain).
+        At the end you'll see a calibration curve and a score showing
+        how well your confidence tracked your actual accuracy.
+      </p>
+
+      <div class="topic-group">
+        <label class="group-label">Choose a topic</label>
+        <div class="topic-options" id="topic-options">
+          <label class="topic-option selected" for="topic-general">
+            <input type="radio" name="topic" id="topic-general"
+                   value="general" checked />
+            <div>
+              <div class="topic-name">General Facts</div>
+              <div class="topic-desc">Geography, history, nature, world statistics</div>
+            </div>
+          </label>
+          <label class="topic-option" for="topic-global_health">
+            <input type="radio" name="topic" id="topic-global_health"
+                   value="global_health" />
+            <div>
+              <div class="topic-name">Global Health &amp; Development</div>
+              <div class="topic-desc">Mortality, disease, poverty, literacy</div>
+            </div>
+          </label>
+          <label class="topic-option" for="topic-animal_welfare">
+            <input type="radio" name="topic" id="topic-animal_welfare"
+                   value="animal_welfare" />
+            <div>
+              <div class="topic-name">Animal Cognition &amp; Welfare</div>
+              <div class="topic-desc">Animal intelligence, farming, behaviour</div>
+            </div>
+          </label>
+          <label class="topic-option" for="topic-ai_development">
+            <input type="radio" name="topic" id="topic-ai_development"
+                   value="ai_development" />
+            <div>
+              <div class="topic-name">AI Development</div>
+              <div class="topic-desc">Capabilities, milestones, adoption trends</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div id="welcome-error" class="error-banner"></div>
+
+      <div class="welcome-footer">
+        <button class="btn btn-primary" id="btn-begin">Begin quiz →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       SCREEN 2 — Question
+  ════════════════════════════════════════════════════════════════════════════ -->
+  <div id="screen-question" class="screen">
+    <div class="card">
+
+      <!-- Progress -->
+      <div class="progress-bar-wrap">
+        <div class="progress-meta">
+          <span id="progress-text">Question 1 of 40</span>
+          <span id="progress-pct">0%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- Statement -->
+      <div class="question-text" id="question-text">
+        Loading question…
+      </div>
+
+      <!-- True / False buttons -->
+      <div class="tf-group">
+        <button class="tf-btn" id="btn-true"  data-value="true">True</button>
+        <button class="tf-btn" id="btn-false" data-value="false">False</button>
+      </div>
+
+      <!-- Confidence slider -->
+      <div class="confidence-section">
+        <div class="confidence-label-row">
+          <label for="confidence-slider">How confident are you?</label>
+          <span class="confidence-value" id="confidence-display">75%</span>
+        </div>
+        <div class="slider-wrap">
+          <input type="range"
+                 id="confidence-slider"
+                 min="50" max="100" step="1" value="75" />
+        </div>
+        <div class="slider-labels">
+          <span>Just guessing (50%)</span>
+          <span>Certain (100%)</span>
+        </div>
+      </div>
+
+      <div class="question-footer">
+        <button class="btn btn-primary" id="btn-next" disabled>Next →</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       SCREEN 3 — Results
+  ════════════════════════════════════════════════════════════════════════════ -->
+  <div id="screen-results" class="screen">
+    <div class="card">
+
+      <!-- Score header -->
+      <div class="results-header">
+        <div class="score-display" id="result-score">—</div>
+        <div id="result-badge" class="score-label-badge" style="display:none"></div>
+        <p class="score-message" id="result-message"></p>
+      </div>
+
+      <!-- Summary stats -->
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-num" id="stat-accuracy">—</div>
+          <div class="stat-lbl">Overall accuracy</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num" id="stat-questions">—</div>
+          <div class="stat-lbl">Questions answered</div>
+        </div>
+      </div>
+
+      <!-- Calibration curve chart -->
+      <div class="chart-section">
+        <h3>Calibration curve</h3>
+        <div class="chart-container">
+          <canvas id="calibration-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="results-footer">
+        <button class="btn btn-outline" id="btn-change-topic">Change topic</button>
+        <button class="btn btn-primary" id="btn-try-again">Try again →</button>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /.app -->
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <span>Loading questions…</span>
+</div>
+
+
+<script>
+// ── State ────────────────────────────────────────────────────────────────────
+const state = {
+  topic:           "general",
+  questions:       [],   // array of question objects from the API
+  currentIndex:    0,
+  answers:         [],   // { question_id, user_answer, correct_answer, confidence }
+  currentAnswer:   null, // "true" | "false" | null
+  currentConf:     75,
+  chart:           null,
+};
+
+const TOTAL = 40; // questions per session
+
+// ── DOM refs ─────────────────────────────────────────────────────────────────
+const screens = {
+  welcome:  document.getElementById("screen-welcome"),
+  question: document.getElementById("screen-question"),
+  results:  document.getElementById("screen-results"),
+};
+
+const els = {
+  btnBegin:      document.getElementById("btn-begin"),
+  btnTrue:       document.getElementById("btn-true"),
+  btnFalse:      document.getElementById("btn-false"),
+  btnNext:       document.getElementById("btn-next"),
+  btnTryAgain:   document.getElementById("btn-try-again"),
+  btnChangeTopic:document.getElementById("btn-change-topic"),
+
+  progressText:  document.getElementById("progress-text"),
+  progressPct:   document.getElementById("progress-pct"),
+  progressFill:  document.getElementById("progress-fill"),
+  questionText:  document.getElementById("question-text"),
+
+  confSlider:    document.getElementById("confidence-slider"),
+  confDisplay:   document.getElementById("confidence-display"),
+
+  resultScore:   document.getElementById("result-score"),
+  resultBadge:   document.getElementById("result-badge"),
+  resultMessage: document.getElementById("result-message"),
+  statAccuracy:  document.getElementById("stat-accuracy"),
+  statQuestions: document.getElementById("stat-questions"),
+
+  loadingOverlay:document.getElementById("loading-overlay"),
+  welcomeError:  document.getElementById("welcome-error"),
+};
+
+// ── Screen management ────────────────────────────────────────────────────────
+function showScreen(name) {
+  Object.values(screens).forEach(s => s.classList.remove("active"));
+  screens[name].classList.add("active");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// ── Loading helpers ───────────────────────────────────────────────────────────
+function setLoading(on) {
+  els.loadingOverlay.classList.toggle("visible", on);
+}
+
+function showWelcomeError(msg) {
+  els.welcomeError.textContent = msg;
+  els.welcomeError.classList.add("visible");
+}
+
+function clearWelcomeError() {
+  els.welcomeError.classList.remove("visible");
+}
+
+// ── Topic radio buttons ───────────────────────────────────────────────────────
+document.getElementById("topic-options").addEventListener("change", e => {
+  if (e.target.type !== "radio") return;
+  state.topic = e.target.value;
+
+  // Update highlighted option
+  document.querySelectorAll(".topic-option").forEach(opt => {
+    opt.classList.toggle("selected", opt.querySelector("input").value === state.topic);
+  });
+});
+
+// ── Begin button ──────────────────────────────────────────────────────────────
+els.btnBegin.addEventListener("click", async () => {
+  clearWelcomeError();
+  setLoading(true);
+  els.btnBegin.disabled = true;
+
+  try {
+    const res = await fetch(`/api/questions?topic=${encodeURIComponent(state.topic)}`);
+    if (!res.ok) throw new Error(`Server error ${res.status}`);
+    const data = await res.json();
+
+    if (!Array.isArray(data) || data.length === 0) {
+      throw new Error("No questions returned for this topic.");
+    }
+
+    // Reset session state
+    state.questions    = data;
+    state.currentIndex = 0;
+    state.answers      = [];
+
+    showScreen("question");
+    renderQuestion();
+  } catch (err) {
+    showWelcomeError("Could not load questions: " + err.message);
+  } finally {
+    setLoading(false);
+    els.btnBegin.disabled = false;
+  }
+});
+
+// ── True / False buttons ──────────────────────────────────────────────────────
+[els.btnTrue, els.btnFalse].forEach(btn => {
+  btn.addEventListener("click", () => {
+    const val = btn.dataset.value; // "true" or "false"
+    state.currentAnswer = val;
+
+    // Update button styles
+    els.btnTrue.className  = "tf-btn" + (val === "true"  ? " selected-true"  : "");
+    els.btnFalse.className = "tf-btn" + (val === "false" ? " selected-false" : "");
+
+    // Enable Next only after an answer is chosen
+    els.btnNext.disabled = false;
+  });
+});
+
+// ── Confidence slider ─────────────────────────────────────────────────────────
+els.confSlider.addEventListener("input", () => {
+  state.currentConf = parseInt(els.confSlider.value, 10);
+  els.confDisplay.textContent = state.currentConf + "%";
+  updateSliderTrack();
+});
+
+function updateSliderTrack() {
+  // Fill the track left of the thumb with the accent colour
+  const pct = ((state.currentConf - 50) / 50) * 100;
+  els.confSlider.style.background =
+    `linear-gradient(to right, var(--accent) ${pct}%, var(--border) ${pct}%)`;
+}
+
+// ── Render a question ─────────────────────────────────────────────────────────
+function renderQuestion() {
+  const q   = state.questions[state.currentIndex];
+  const num = state.currentIndex + 1;
+
+  // Progress bar
+  const pct = Math.round(((num - 1) / TOTAL) * 100);
+  els.progressText.textContent = `Question ${num} of ${TOTAL}`;
+  els.progressPct.textContent  = pct + "%";
+  els.progressFill.style.width = pct + "%";
+
+  // Question text
+  els.questionText.textContent = q.question;
+
+  // Reset answer selection
+  state.currentAnswer  = null;
+  state.currentConf    = 75;
+  els.btnTrue.className  = "tf-btn";
+  els.btnFalse.className = "tf-btn";
+  els.btnNext.disabled   = true;
+
+  // Reset slider
+  els.confSlider.value         = 75;
+  els.confDisplay.textContent  = "75%";
+  updateSliderTrack();
+}
+
+// ── Next button ───────────────────────────────────────────────────────────────
+els.btnNext.addEventListener("click", () => {
+  if (state.currentAnswer === null) return; // safety guard
+
+  const q = state.questions[state.currentIndex];
+
+  // Record the answer
+  state.answers.push({
+    question_id:    q.id,
+    user_answer:    state.currentAnswer === "true",
+    correct_answer: q.answer,             // boolean from JSON
+    confidence:     state.currentConf,
+  });
+
+  state.currentIndex++;
+
+  if (state.currentIndex >= state.questions.length || state.currentIndex >= TOTAL) {
+    // All questions answered — compute and show results
+    submitAndShowResults();
+  } else {
+    renderQuestion();
+  }
+});
+
+// ── Submit answers and show results ──────────────────────────────────────────
+async function submitAndShowResults() {
+  setLoading(true);
+
+  try {
+    const res = await fetch("/api/score", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ answers: state.answers }),
+    });
+
+    if (!res.ok) throw new Error(`Server error ${res.status}`);
+    const data = await res.json();
+
+    renderResults(data);
+    showScreen("results");
+  } catch (err) {
+    // Fall back gracefully — compute client-side if server is down
+    console.error("Score API failed:", err);
+    alert("Could not reach the scoring server. Please ensure app.py is running.");
+  } finally {
+    setLoading(false);
+  }
+}
+
+// ── Render results ────────────────────────────────────────────────────────────
+function renderResults(data) {
+  // Score display
+  if (data.score !== null && data.score !== undefined) {
+    els.resultScore.textContent  = data.score.toFixed(2);
+    els.resultBadge.textContent  = data.score_label;
+    els.resultBadge.style.display = "inline-block";
+  } else {
+    els.resultScore.textContent   = "—";
+    els.resultBadge.style.display = "none";
+  }
+
+  els.resultMessage.textContent = data.score_message;
+  els.statAccuracy.textContent  = data.overall_accuracy + "%";
+  els.statQuestions.textContent = data.total_questions;
+
+  // Draw the calibration chart
+  drawCalibrationChart(data.bucket_data);
+}
+
+// ── Chart helpers ─────────────────────────────────────────────────────────────
+
+/**
+ * Map a deviation (0–50) to a CSS color using a smooth slate → red gradient.
+ * deviation = |stated_confidence_midpoint − actual_accuracy|
+ */
+function deviationToColor(dev) {
+  const t = Math.min(dev / 40, 1); // saturate at 40 percentage-point deviation
+
+  // Interpolate hue:  210 (cool blue-slate) → 5 (red)
+  const h = Math.round(210 * (1 - t) + 5 * t);
+  // Interpolate saturation: 12% → 70%
+  const s = Math.round(12  + 58  * t);
+  // Interpolate lightness:  55% → 48%
+  const l = Math.round(55  -  7  * t);
+
+  return `hsl(${h}, ${s}%, ${l}%)`;
+}
+
+function drawCalibrationChart(bucketData) {
+  // Destroy any previous chart instance to avoid canvas reuse errors
+  if (state.chart) {
+    state.chart.destroy();
+    state.chart = null;
+  }
+
+  const ctx = document.getElementById("calibration-chart").getContext("2d");
+
+  // Reference line: perfect calibration from (50, 50) to (100, 100)
+  const refLine = {
+    type:   "line",
+    label:  "Perfect calibration",
+    data:   [{ x: 50, y: 50 }, { x: 100, y: 100 }],
+    borderColor:    "#c0c8d4",
+    borderDash:     [5, 4],
+    borderWidth:    1.5,
+    pointRadius:    0,
+    tension:        0,
+    fill:           false,
+  };
+
+  // One scatter point per non-empty confidence bucket
+  const dotData = bucketData.map(b => ({ x: b.midpoint, y: b.accuracy, bucket: b }));
+  const dotColors = bucketData.map(b => deviationToColor(Math.abs(b.midpoint - b.accuracy)));
+  // Larger dot = more responses; min radius 6, scale up to about 16
+  const dotRadii  = bucketData.map(b => Math.max(6, Math.min(16, 6 + b.count * 0.6)));
+
+  const scatterSet = {
+    type:                 "scatter",
+    label:                "Your responses",
+    data:                 dotData,
+    pointBackgroundColor: dotColors,
+    pointBorderColor:     dotColors.map(c => c),
+    pointBorderWidth:     2,
+    pointRadius:          dotRadii,
+    pointHoverRadius:     dotRadii.map(r => r + 3),
+  };
+
+  state.chart = new Chart(ctx, {
+    data: {
+      datasets: [refLine, scatterSet],
+    },
+    options: {
+      responsive:          true,
+      maintainAspectRatio: false,
+      animation:           { duration: 500 },
+      plugins: {
+        legend: {
+          display: true,
+          labels: {
+            boxWidth: 18,
+            font: { size: 12 },
+            color: "#718096",
+            // Only show the first two legend items
+            filter: item => item.datasetIndex <= 1,
+          },
+        },
+        tooltip: {
+          callbacks: {
+            // Only show tooltips for the scatter dataset
+            label: function(ctx) {
+              if (ctx.datasetIndex !== 1) return null;
+              const b = ctx.raw.bucket;
+              return [
+                `Confidence: ${b.label}`,
+                `Accuracy: ${b.accuracy}%`,
+                `Questions: ${b.count}`,
+              ];
+            },
+          },
+          filter: item => item.datasetIndex === 1,
+          backgroundColor: "rgba(45,55,72,0.9)",
+          padding:         10,
+          titleFont:       { size: 0 },   // hide default title line
+          bodyFont:        { size: 13 },
+          bodyColor:       "#e2e8f0",
+          cornerRadius:    6,
+        },
+      },
+      scales: {
+        x: {
+          type:  "linear",
+          min:   45,
+          max:   105,
+          title: {
+            display: true,
+            text:    "Stated confidence (%)",
+            color:   "#718096",
+            font:    { size: 12 },
+          },
+          ticks: {
+            stepSize: 10,
+            callback: v => v + "%",
+            color:    "#718096",
+          },
+          grid: { color: "#edf2f7" },
+        },
+        y: {
+          type:  "linear",
+          min:   0,
+          max:   105,
+          title: {
+            display: true,
+            text:    "Actual accuracy (%)",
+            color:   "#718096",
+            font:    { size: 12 },
+          },
+          ticks: {
+            stepSize: 20,
+            callback: v => v + "%",
+            color:    "#718096",
+          },
+          grid: { color: "#edf2f7" },
+        },
+      },
+    },
+  });
+}
+
+// ── Try Again / Change Topic ──────────────────────────────────────────────────
+els.btnTryAgain.addEventListener("click", async () => {
+  // Restart with the same topic
+  clearWelcomeError();
+  setLoading(true);
+
+  try {
+    const res = await fetch(`/api/questions?topic=${encodeURIComponent(state.topic)}`);
+    if (!res.ok) throw new Error(`Server error ${res.status}`);
+    const data = await res.json();
+
+    state.questions    = data;
+    state.currentIndex = 0;
+    state.answers      = [];
+
+    showScreen("question");
+    renderQuestion();
+  } catch (err) {
+    showScreen("welcome");
+    showWelcomeError("Could not reload questions: " + err.message);
+  } finally {
+    setLoading(false);
+  }
+});
+
+els.btnChangeTopic.addEventListener("click", () => {
+  showScreen("welcome");
+});
+
+// ── Initialise slider track on page load ──────────────────────────────────────
+updateSliderTrack();
+</script>
+
+</body>
+</html>
