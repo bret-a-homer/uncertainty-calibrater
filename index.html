@@ -229,9 +229,8 @@
       text-align: center;
     }
 
-    .tf-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .tf-btn.selected-true  { border-color: var(--correct); background: #f0fff4; color: var(--correct); }
-    .tf-btn.selected-false { border-color: var(--wrong);   background: #fff5f5; color: var(--wrong); }
+    .tf-btn:hover    { border-color: var(--accent); color: var(--accent); }
+    .tf-btn.selected { border-color: var(--accent); background: #eef4fb; color: var(--accent); }
 
     /* ── Slider ───────────────────────────────────────────────────────────── */
     .confidence-section { margin-bottom: 32px; }
@@ -653,14 +652,25 @@ function computeScore(answers) {
 
 // ── Random sampling (Fisher-Yates) ────────────────────────────────────────────
 
-function sampleQuestions(all, topic, n = 40) {
-  const pool = all.filter(q => q.topic === topic);
-  const arr  = [...pool];
+function shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
-  return arr.slice(0, Math.min(n, arr.length));
+  return arr;
+}
+
+function sampleQuestions(all, topic, n = 40) {
+  const pool = all.filter(q => q.topic === topic);
+  if (pool.length === 0) return [];
+
+  // If the pool is smaller than n, tile it (shuffle each pass) so we
+  // always reach exactly n questions — preventing early quiz cutoff.
+  const result = [];
+  while (result.length < n) {
+    result.push(...shuffle([...pool]));
+  }
+  return result.slice(0, n);
 }
 
 // ── App state ─────────────────────────────────────────────────────────────────
@@ -792,8 +802,8 @@ els.btnBegin.addEventListener("click", async () => {
   btn.addEventListener("click", () => {
     const val = btn.dataset.value;
     state.currentAnswer   = val;
-    els.btnTrue.className  = "tf-btn" + (val === "true"  ? " selected-true"  : "");
-    els.btnFalse.className = "tf-btn" + (val === "false" ? " selected-false" : "");
+    els.btnTrue.className  = "tf-btn" + (val === "true"  ? " selected" : "");
+    els.btnFalse.className = "tf-btn" + (val === "false" ? " selected" : "");
     els.btnNext.disabled   = false;
   });
 });
@@ -822,7 +832,9 @@ function renderQuestion() {
   state.currentConf     = 75;
   els.btnTrue.className  = "tf-btn";
   els.btnFalse.className = "tf-btn";
+  // Keep Next disabled until a T/F answer is explicitly chosen
   els.btnNext.disabled   = true;
+  els.btnNext.setAttribute("aria-disabled", "true");
   els.confSlider.value   = 75;
   els.confDisplay.textContent = "75%";
   updateSliderTrack();
@@ -873,12 +885,16 @@ function showResults() {
 
 // ── Calibration chart ─────────────────────────────────────────────────────────
 
-function deviationToColor(dev) {
-  const t = Math.min(dev / 40, 1);
-  const h = Math.round(210 * (1 - t) + 5 * t);
-  const s = Math.round(12  + 58  * t);
-  const l = Math.round(55  -  7  * t);
-  return `hsl(${h}, ${s}%, ${l}%)`;
+// Returns a semi-translucent fill and a fully-opaque border for each dot.
+// deviation 0 → rich green; deviation ≥ 40 → vivid red.
+function deviationToColors(dev) {
+  const t  = Math.min(dev / 40, 1);
+  const h  = Math.round(142 * (1 - t) + 4 * t);   // 142° green → 4° red
+  const s  = Math.round(62  + 10 * t);              // 62% → 72% saturation
+  const l  = Math.round(40  -  4 * t);              // 40% → 36% lightness
+  const fill   = `hsla(${h}, ${s}%, ${l}%, 0.65)`;
+  const border = `hsl(${h}, ${s}%, ${Math.max(l - 8, 20)}%)`;
+  return { fill, border };
 }
 
 function drawChart(bucketData) {
@@ -886,8 +902,10 @@ function drawChart(bucketData) {
 
   const ctx = document.getElementById("calibration-chart").getContext("2d");
 
-  const dotColors = bucketData.map(b => deviationToColor(Math.abs(b.midpoint - b.accuracy)));
-  const dotRadii  = bucketData.map(b => Math.max(6, Math.min(16, 6 + b.count * 0.6)));
+  const dotPalette = bucketData.map(b => deviationToColors(Math.abs(b.midpoint - b.accuracy)));
+  const dotFills   = dotPalette.map(p => p.fill);
+  const dotBorders = dotPalette.map(p => p.border);
+  const dotRadii   = bucketData.map(b => Math.max(7, Math.min(18, 7 + b.count * 0.7)));
 
   state.chart = new Chart(ctx, {
     data: {
@@ -909,8 +927,8 @@ function drawChart(bucketData) {
           type:                 "scatter",
           label:                "Your responses",
           data:                 bucketData.map(b => ({ x: b.midpoint, y: b.accuracy, bucket: b })),
-          pointBackgroundColor: dotColors,
-          pointBorderColor:     dotColors,
+          pointBackgroundColor: dotFills,
+          pointBorderColor:     dotBorders,
           pointBorderWidth:     2,
           pointRadius:          dotRadii,
           pointHoverRadius:     dotRadii.map(r => r + 3),
