@@ -173,7 +173,61 @@
     .topic-name { font-size: 0.92rem; font-weight: 500; color: var(--text); }
     .topic-desc { font-size: 0.8rem; color: var(--text-muted); margin: 0; }
 
-    .welcome-footer { margin-top: 28px; display: flex; justify-content: flex-end; }
+    .welcome-footer {
+      margin-top: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .demo-section {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .demo-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .btn-demo {
+      padding: 7px 13px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      background: transparent;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+
+    .btn-demo:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: #f0f7ff;
+    }
+
+    /* Small badge shown on results when viewing demo data */
+    .demo-badge {
+      display: none;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--accent-dk);
+      background: #eef4fb;
+      border: 1px solid #c5daf0;
+      border-radius: 99px;
+      padding: 3px 10px;
+      margin-bottom: 12px;
+    }
+
+    .demo-badge.visible { display: inline-block; }
 
     /* ── Progress ─────────────────────────────────────────────────────────── */
     .progress-bar-wrap { margin-bottom: 26px; }
@@ -498,6 +552,12 @@
       <div id="welcome-error" class="error-banner"></div>
 
       <div class="welcome-footer">
+        <div class="demo-section">
+          <span class="demo-label">Preview with simulated data:</span>
+          <button class="btn-demo" data-profile="high">High calibration</button>
+          <button class="btn-demo" data-profile="mid">Mid calibration</button>
+          <button class="btn-demo" data-profile="low">Low calibration</button>
+        </div>
         <button class="btn btn-primary" id="btn-begin">Begin quiz →</button>
       </div>
     </div>
@@ -548,6 +608,7 @@
     <div class="card">
 
       <div class="results-header">
+        <div id="demo-badge" class="demo-badge">Simulated data</div>
         <div class="score-display" id="result-score">—</div>
         <div id="result-badge" class="score-label-badge" style="display:none"></div>
         <p class="score-message" id="result-message"></p>
@@ -889,6 +950,7 @@ els.btnNext.addEventListener("click", () => {
   state.currentIndex++;
 
   if (state.currentIndex >= state.questions.length || state.currentIndex >= TOTAL) {
+    state.isDemo = false;
     showResults();
   } else {
     renderQuestion();
@@ -912,6 +974,15 @@ function showResults() {
   els.resultMessage.textContent = data.scoreMessage;
   els.statAccuracy.textContent  = data.overallAccuracy + "%";
   els.statQuestions.textContent = data.totalQuestions;
+
+  // Show or hide the "Simulated data" badge
+  const demoBadge = document.getElementById("demo-badge");
+  if (state.isDemo) {
+    demoBadge.textContent = `Simulated — ${state.demoLabel}`;
+    demoBadge.classList.add("visible");
+  } else {
+    demoBadge.classList.remove("visible");
+  }
 
   drawChart(data.bucketData);
   showScreen("results");
@@ -1046,6 +1117,60 @@ els.btnTryAgain.addEventListener("click", async () => {
 });
 
 els.btnChangeTopic.addEventListener("click", () => showScreen("welcome"));
+
+// ── Demo simulation ───────────────────────────────────────────────────────────
+//
+// Each profile specifies [confidence, accuracyRate, count] per bucket.
+// The accuracy rate is how often userAnswer === correctAnswer in that bucket.
+// Confidence values are jittered ±3 within the bucket to produce natural spread.
+
+const DEMO_PROFILES = {
+  high: {
+    label: "High calibration",
+    // Accuracy tracks confidence closely → Pearson ≈ 0.97
+    buckets: [[55, 0.55, 8], [65, 0.65, 8], [75, 0.76, 8], [85, 0.86, 8], [95, 0.93, 8]],
+  },
+  mid: {
+    label: "Mid calibration",
+    // Persistently overconfident — accuracy lags well behind confidence
+    buckets: [[55, 0.40, 8], [65, 0.54, 8], [75, 0.63, 8], [85, 0.68, 8], [95, 0.71, 8]],
+  },
+  low: {
+    label: "Low calibration",
+    // No meaningful relationship between confidence and accuracy
+    buckets: [[55, 0.75, 8], [65, 0.45, 8], [75, 0.82, 8], [85, 0.50, 8], [95, 0.58, 8]],
+  },
+};
+
+function generateSimulatedAnswers(profileKey) {
+  const { buckets } = DEMO_PROFILES[profileKey];
+  const answers = [];
+
+  for (const [baseConf, accuracyRate, count] of buckets) {
+    const correctCount = Math.round(accuracyRate * count);
+    for (let i = 0; i < count; i++) {
+      const isCorrect = i < correctCount;
+      // Small jitter keeps confidence values realistic within each bucket
+      const jitter = Math.floor(Math.random() * 7) - 3;
+      const conf   = Math.max(50, Math.min(100, baseConf + jitter));
+      answers.push({ userAnswer: isCorrect, correctAnswer: true, confidence: conf });
+    }
+  }
+
+  // Shuffle so correct/incorrect aren't grouped by bucket order
+  return shuffle(answers);
+}
+
+document.querySelectorAll(".btn-demo").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const profile = btn.dataset.profile;
+    state.answers  = generateSimulatedAnswers(profile);
+    state.isDemo   = true;
+    state.demoLabel = DEMO_PROFILES[profile].label;
+    showResults();
+    showScreen("results");
+  });
+});
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 updateSliderTrack();
