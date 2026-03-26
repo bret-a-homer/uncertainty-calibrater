@@ -436,6 +436,107 @@
 
     .attribution a:hover { text-decoration: underline; }
 
+    /* ── Question review list ─────────────────────────────────────────────── */
+    .review-section {
+      margin-top: 32px;
+      padding-top: 28px;
+      border-top: 1px solid var(--border);
+    }
+
+    .review-section h3 {
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    .review-group-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+      padding: 8px 0 10px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 12px;
+      margin-top: 24px;
+    }
+
+    .review-group-label:first-child { margin-top: 0; }
+
+    .review-item {
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-left-width: 3px;
+      border-radius: var(--radius);
+      margin-bottom: 10px;
+      background: var(--bg-card);
+    }
+
+    .review-item.incorrect { border-left-color: #fc8181; }
+    .review-item.correct   { border-left-color: var(--border); }
+
+    .review-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      gap: 8px;
+    }
+
+    .review-status {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      flex-shrink: 0;
+    }
+
+    .review-status.incorrect { color: #e53e3e; }
+    .review-status.correct   { color: #38a169; }
+
+    .review-conf {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .review-statement {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.45;
+      margin-bottom: 10px;
+    }
+
+    .review-answers {
+      display: flex;
+      gap: 20px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .review-answers .wrong  { color: #e53e3e; font-weight: 600; }
+    .review-answers .right  { color: #38a169; font-weight: 600; }
+
+    .review-explanation {
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      line-height: 1.58;
+      margin-bottom: 6px;
+    }
+
+    .review-source {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      opacity: 0.65;
+      font-style: italic;
+    }
+
     .results-footer {
       display: flex;
       justify-content: center;
@@ -648,6 +749,11 @@
       <div class="results-footer">
         <button class="btn btn-outline" id="btn-change-topic">Change topic</button>
         <button class="btn btn-primary" id="btn-try-again">Try again →</button>
+      </div>
+
+      <div class="review-section" id="review-section" style="display:none">
+        <h3>Question review</h3>
+        <div id="review-list"></div>
       </div>
 
     </div>
@@ -942,6 +1048,7 @@ els.btnNext.addEventListener("click", () => {
 
   const q = state.questions[state.currentIndex];
   state.answers.push({
+    question:      q,                           // retained for post-quiz review
     userAnswer:    state.currentAnswer === "true",
     correctAnswer: q.answer,
     confidence:    state.currentConf,
@@ -985,6 +1092,7 @@ function showResults() {
   }
 
   drawChart(data.bucketData);
+  renderReview(state.answers);
   showScreen("results");
 }
 
@@ -1171,6 +1279,87 @@ document.querySelectorAll(".btn-demo").forEach(btn => {
     showScreen("results");
   });
 });
+
+// ── Question review ───────────────────────────────────────────────────────────
+
+function renderReview(answers) {
+  const section = document.getElementById("review-section");
+  const list    = document.getElementById("review-list");
+
+  // Skip review for demo mode (simulated answers have no question objects)
+  if (state.isDemo || !answers.length || !answers[0].question) {
+    section.style.display = "none";
+    return;
+  }
+
+  section.style.display = "block";
+  list.innerHTML = "";
+
+  // Sort: incorrect first (highest confidence first), then correct (highest first)
+  const sorted = [...answers].sort((a, b) => {
+    const aWrong = a.userAnswer !== a.correctAnswer;
+    const bWrong = b.userAnswer !== b.correctAnswer;
+    if (aWrong !== bWrong) return bWrong ? 1 : -1;  // incorrect group first
+    return b.confidence - a.confidence;              // within group: highest conf first
+  });
+
+  let currentGroup = null;
+
+  for (const ans of sorted) {
+    const isCorrect = ans.userAnswer === ans.correctAnswer;
+    const group     = isCorrect ? "correct" : "incorrect";
+    const q         = ans.question;
+
+    // Insert a group heading when the group changes
+    if (group !== currentGroup) {
+      currentGroup = group;
+      const incorrectCount = answers.filter(a => a.userAnswer !== a.correctAnswer).length;
+      const correctCount   = answers.length - incorrectCount;
+
+      const label    = document.createElement("div");
+      label.className = "review-group-label";
+      label.textContent = isCorrect
+        ? `Correct (${correctCount})`
+        : `Incorrect — sorted by confidence (${incorrectCount})`;
+      list.appendChild(label);
+    }
+
+    // Build the answer line: shows what the user said vs the correct answer
+    const userText    = ans.userAnswer    ? "True" : "False";
+    const correctText = ans.correctAnswer ? "True" : "False";
+    const answerClass = isCorrect ? "right" : "wrong";
+
+    const item = document.createElement("div");
+    item.className = `review-item ${group}`;
+    item.innerHTML = `
+      <div class="review-item-header">
+        <span class="review-status ${group}">${isCorrect ? "✓ Correct" : "✗ Incorrect"}</span>
+        <span class="review-conf">${ans.confidence}% confident</span>
+      </div>
+      <div class="review-statement">${escHtml(q.question)}</div>
+      <div class="review-answers">
+        <span>Your answer: <span class="${answerClass}">${userText}</span></span>
+        <span>Correct answer: <span class="right">${correctText}</span></span>
+      </div>
+      ${q.explanation
+        ? `<div class="review-explanation">${escHtml(q.explanation)}</div>`
+        : ""}
+      ${q.source
+        ? `<div class="review-source">Source: ${escHtml(q.source)}</div>`
+        : ""}
+    `;
+    list.appendChild(item);
+  }
+}
+
+// Minimal HTML escaping so question/explanation text renders safely
+function escHtml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 updateSliderTrack();
